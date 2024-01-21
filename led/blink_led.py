@@ -1,29 +1,22 @@
-import RPi.GPIO as GPIO
+import init_fake_rpi
+import RPi.GPIO as gpio
 import time
-from importlib.metadata import version
+from utils import print_rpi_versions
 
 LED_PIN = 17
 
-def print_RP_versions():
-    print("RPi.GPIO version: {}".format(version('RPi.GPIO')))
-    
-    info = GPIO.RPI_INFO
-    print("P1_REVISION: {}".format(info['P1_REVISION']))
-    print("REVISION: {}".format(info['REVISION']))
-    print("TYPE: {}".format(info['TYPE']))
-    print("MANUFACTURER: {}".format(info['MANUFACTURER']))
-    print("PROCESSOR version: {}".format(info['PROCESSOR']))
-    print("RAM: {}".format(info['RAM']))
-    
 
-GPIO.setmode(GPIO.BCM)
-print_RP_versions()
-GPIO.setup(LED_PIN, GPIO.OUT)
+def setup():
+    gpio.setmode(gpio.BCM)
+    gpio.setup(LED_PIN, gpio.OUT)
 
-GPIO.output(LED_PIN, GPIO.HIGH)
-time.sleep(1)
-GPIO.output(LED_PIN, GPIO.LOW)
-time.sleep(1)
 
-GPIO.cleanup()
+setup()
+print_rpi_versions()
+
+gpio.output(LED_PIN, gpio.HIGH)
+time.sleep(3)
+gpio.output(LED_PIN, gpio.LOW)
+
+gpio.cleanup()
 
