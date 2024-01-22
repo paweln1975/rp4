@@ -37,5 +37,3 @@ while counter < MAX_PRESSED * 2:
     time.sleep(0.1)
 
 gpio.cleanup()
-
-gpio.cleanup()
