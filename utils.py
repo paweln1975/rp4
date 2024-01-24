@@ -1,8 +1,14 @@
+import sys
 import RPi.GPIO as gpio
 from importlib.metadata import version
 
 
 def print_rpi_versions():
+
+    if "init_fake_rpi" in sys.modules:
+        print("Version printing is not supported")
+        return
+
     print("RPi.GPIO version: {}".format(version('RPi.GPIO')))
 
     info = gpio.RPI_INFO

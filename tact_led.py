@@ -15,8 +15,8 @@ def setup():
     gpio.setup(BUTTON_PIN, gpio.IN)
 
 
-print_rpi_versions()
 setup()
+print_rpi_versions()
 
 counter = 0
 prev_value = gpio.LOW
