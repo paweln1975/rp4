@@ -14,13 +14,13 @@ def setup():
 
 
 def blink_led(sleep_time: float, proportion: int):
-    singnal_high = sleep_time * proportion / MAX_RANGE
-    singnal_low = sleep_time * (MAX_RANGE - proportion) / MAX_RANGE
+    signal_high = sleep_time * proportion / MAX_RANGE
+    signal_low = sleep_time * (MAX_RANGE - proportion) / MAX_RANGE
 
     gpio.output(LED_PIN, gpio.HIGH)
-    time.sleep(singnal_high)
+    time.sleep(signal_high)
     gpio.output(LED_PIN, gpio.LOW)
-    time.sleep(singnal_low)
+    time.sleep(signal_low)
 
 
 setup()
