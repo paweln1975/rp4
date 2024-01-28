@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Raspberry PI 4</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <script type="text/javascript">
+        function OnSubmitForm() {
+            if (document.getElementById('pin22').checked == true) {
+                document.groupForm.action = '/led/' + document.getElementById('pin22').value + '/1'
+            }
+
+            if (document.getElementById('pin27').checked == true) {
+                document.groupForm.action = '/led/' + document.getElementById('pin27').value + '/1'
+            }
+
+            if (document.getElementById('pin17').checked == true) {
+                document.groupForm.action = '/led/' + document.getElementById('pin17').value + '/1'
+            }
+
+            return true
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12 align-self-center">
+            <form method="get" action="/led/blink">
+                <p align="center">
+                    <button type="submit" class="btn btn-primary">BLINK LED</button>
+                </p>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <!-- Force next columns to break to new line -->
+        <div class="col-12 align-self-center">
+            <form method="get" action="/led/gradient">
+                <p align="center">
+                    <button type="submit" class="btn btn-primary">GRADIENT LED</button>
+                </p>
+            </form>
+        </div>
+    </div>
+    <form name="groupForm" method="get" onsubmit="return OnSubmitForm();">
+        <div class="row">
+            <div class="col">
+                <div class="d-flex justify-content-end">
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="led" id="pin17"
+                                   value="17" {% if pin == "17" %} checked {% endif %}>
+                            <label class="form-check-label" for="pin17">
+                                Green
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="led" id="pin27"
+                                   value="27" {% if pin == "27" %} checked {% endif %}>
+                            <label class="form-check-label" for="pin27">
+                                Blue
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="led" id="pin22"
+                                   value="22" {% if pin == "22" %} checked {% endif %}>
+                            <label class="form-check-label" for="pin22">
+                                Red
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary">LED</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>
