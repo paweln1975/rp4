@@ -1,9 +1,22 @@
-from flask import Flask, render_template
+import os
+import platform
 import blink_led as blink
 import gradient_led as gradient
 import led_on_off as led_op
 
-app = Flask(__name__)
+from flask import Flask, render_template
+
+PATH_SEP = '\\' if platform.system() == "Windows" else '/'
+CAMERA_FOLDER_PATH = os.getcwd() + PATH_SEP + 'camera'
+
+app = Flask(__name__, static_folder=CAMERA_FOLDER_PATH)
+
+
+class Image:
+    def __init__(self, name, url, path):
+        self.name = name
+        self.url = url
+        self.path = path
 
 
 @app.route("/")
@@ -34,6 +47,17 @@ def led_on_off(pin, on_off):
 
     led_op.run(led_nr, state)
     return render_template('index.html', pin=pin, state=state)
+
+
+@app.route("/movement/<folder_name>")
+def list_photos(folder_name: str):
+    with open(CAMERA_FOLDER_PATH + PATH_SEP + folder_name + PATH_SEP + 'photo_logs.txt', 'r') as f:
+        photos = [Image(name=line.rstrip(),
+                        url=folder_name + PATH_SEP + line.rstrip(),
+                        path=CAMERA_FOLDER_PATH + PATH_SEP + folder_name + PATH_SEP + line.rstrip()
+                        )
+                  for line in f]
+    return render_template('photos.html', photos=photos)
 
 
 app.run(host="0.0.0.0", port=8080)

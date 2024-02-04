@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Raspberry PI 4</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <script type="text/javascript">
+
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12 align-self-center">
+            <p class="ml-4"><a href="{{ url_for('index') }}">Return to the index.</a></p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 align-self-center">
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                <tr>
+
+                    <th scope="col">Name</th>
+                    <th scope="col">Photo</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                {% for photo in photos %}
+                <tr>
+                    <td>{{ photo.name }}</td>
+                    <td>
+                        <div class="text-center">
+                            <img src="{{ url_for('static', filename=photo.url) }}" class="rounded img-fluid"
+                                 alt="{{ photo.path }}">
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
