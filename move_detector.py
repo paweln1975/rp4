@@ -17,6 +17,8 @@ PIR_PIN = 4
 FREQUENCY = 250
 MAX_RANGE = 50
 
+MOVEMENT_CONSECUTIVE_SECONDS = 3
+
 led_list = [LED_1_PIN, LED_2_PIN, LED_3_PIN]
 
 GRADIENT_LED = 1
@@ -136,29 +138,36 @@ class LED(RP4Peripheral):
 
 
 class PIRSensor(RP4Peripheral):
-    def __init__(self, gpio_number, io_type):
+    def __init__(self, gpio_number, io_type, leds):
         super().__init__(gpio_number, io_type)
-        self.consecutive_seconds = 3
+        self.consecutive_seconds = MOVEMENT_CONSECUTIVE_SECONDS
         self.sleep_time = 0.1
+        self.leds = leds
 
-    def detect_movement(self, leds) -> bool:
-        if len(leds) < self.consecutive_seconds:
-            print("To few LEDs provided")
-            return False
+        if len(leds) < 1:
+            print("At least one LED must be provided")
 
+        self.counter_ticks_led_on = int(self.consecutive_seconds / self.sleep_time / len(self.leds))
+
+    def detect_movement(self) -> bool:
         status = gpio.input(self.gpio_number)
         counter = 0
         seconds_counter = -1
-        while status == gpio.HIGH and seconds_counter < self.consecutive_seconds:
+        led_idx = 0
+
+        while status == gpio.HIGH and seconds_counter < self.consecutive_seconds - 1:
             time.sleep(self.sleep_time)
             status = gpio.input(self.gpio_number)
             counter += 1
             if counter % (1 / self.sleep_time) == 0:
                 seconds_counter += 1
-                if seconds_counter in [0, 1, 2]:
-                    leds[seconds_counter].power_on()
+                print(f"Possible movement for {seconds_counter+1}s.")
+            if counter >= led_idx * self.counter_ticks_led_on:
+                if led_idx < len(self.leds):
+                    self.leds[led_idx].power_on()
+                    led_idx += 1
 
-        for led in leds:
+        for led in self.leds:
             led.power_off()
 
         return status == gpio.HIGH
@@ -185,7 +194,7 @@ class MovementDetector:
             led.config()
             self.leds.append(led)
 
-        self.pir_sensor = PIRSensor(PIR_PIN, gpio.IN)
+        self.pir_sensor = PIRSensor(PIR_PIN, gpio.IN, self.leds)
         self.pir_sensor.config()
 
         self.cam_mgr = CameraManager(os.getcwd())
@@ -206,7 +215,7 @@ class MovementDetector:
 
         while not state:
             state = self.button.get_state()
-            if self.pir_sensor.detect_movement(self.leds):
+            if self.pir_sensor.detect_movement():
                 print("Movement detected.")
                 self.leds[self.gradient_led].blink_gradient()
                 current_time = datetime.now()
@@ -238,7 +247,7 @@ def run():
     gpio.setmode(gpio.BCM)
     print_rpi_versions()
 
-    d = MovementDetector(with_email=True)
+    d = MovementDetector(with_email=False)
     d.start()
 
     gpio.cleanup()
