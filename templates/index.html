@@ -81,5 +81,16 @@
         </div>
     </form>
 </div>
+<div class="container">
+  <div class="row row-cols-2 row-cols-lg-5 g-2 g-lg-3">
+      {% for dir in dir_list %}
+        <div class="col">
+            <div class="p-3 border bg-light"><a href="{{ url_for('list_photos', folder_name=dir) }}">{{ dir }}</a></div>
+        </div>
+    {% endfor %}
+  </div>
+</div>
+
+
 </body>
 </html>

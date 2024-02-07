@@ -21,7 +21,14 @@ class Image:
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    dir_list = []
+    try:
+        for entry in os.scandir(path=CAMERA_FOLDER_PATH):
+            if entry.is_dir():
+                dir_list.append(entry.name)
+    except FileNotFoundError as e:
+        print(f"Error occurred: {e}")
+    return render_template('index.html', dir_list=dir_list)
 
 
 @app.route("/led/<op_type>")

@@ -7,9 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
-    <script type="text/javascript">
-
-    </script>
 </head>
 <body>
 <div class="container">
@@ -18,6 +15,16 @@
             <p class="ml-4"><a href="{{ url_for('index') }}">Return to the index.</a></p>
         </div>
     </div>
+
+
+    <div class="row">
+        <div class="col-12 align-self-center">
+            <img id="carusel" src="" class="rounded img-fluid"
+                                 alt="">
+        </div>
+    </div>
+
+
     <div class="row">
         <div class="col-12 align-self-center">
             <table class="table table-striped">
@@ -49,5 +56,22 @@
     </div>
 
 </div>
+
+<script>
+    var imageList = [
+    {% for photo in photos %}
+  "{{ url_for('static', filename=photo.url) }}",
+    {% endfor %}
+]
+var index = 0;
+
+setInterval(function() {
+  document.querySelector("#carusel").src = imageList[index];
+  index++;
+  if (imageList.length == index) {
+      index = 0;
+  }
+}, 250)
+</script>
 </body>
 </html>
