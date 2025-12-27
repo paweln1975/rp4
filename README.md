@@ -55,3 +55,13 @@ using an img tag to render images in the browser.
 
 ## utils
 Common methods
+
+# RP 4 new programs
+
+See in the folder subfolder rp. Written with strategy pattern to be easily extended from RPi library to gpiozero or others.
+
+## demo
+Demo of using Raspberry PI 4 with some components, blink led, tact button, pir sensor.
+
+## christmas
+Christmas lights with leds fading in and out and PIR to blink leds when movement is detected.
