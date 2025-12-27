@@ -50,7 +50,7 @@ class RaspBerryPI:
                 self.logger.error(f"Error: Unsupported Pin mode: {mode}")
                 raise ValueError(f"Unsupported Pin mode: {mode}")
 
-    def blink(self, pin: int, blink_count: int = 3, interval: float = 1.0):
+    def blink(self, pin: int, blink_count: int = 1, interval: float = 1.0):
         self.logger.debug(f"Blinking pin {pin} for {blink_count} times with interval {interval} seconds.")
         if pin not in self.pins_config:
             self.logger.error(f"Error: Pin {pin} is not configured.")
@@ -62,7 +62,23 @@ class RaspBerryPI:
             self.gpio.set_output(pin, PinOutputValue.LOW)
             time.sleep(interval)
 
-    def _blink_led(self, pin: int, sleep_time: float, proportion: int):
+    def on(self, pin: int):
+        self.logger.debug(f"Setting pin {pin} ON.")
+        if pin not in self.pins_config:
+            self.logger.error(f"Error: Pin {pin} is not configured.")
+            return
+
+        self.gpio.set_output(pin, PinOutputValue.HIGH)
+
+    def off(self, pin: int):
+        self.logger.debug(f"Setting pin {pin} OFF.")
+        if pin not in self.pins_config:
+            self.logger.error(f"Error: Pin {pin} is not configured.")
+            return
+
+        self.gpio.set_output(pin, PinOutputValue.LOW)
+
+    def _fade_led(self, pin: int, sleep_time: float, proportion: int):
         signal_high = sleep_time * proportion / MAX_RANGE
         signal_low = sleep_time * (MAX_RANGE - proportion) / MAX_RANGE
 
@@ -82,11 +98,11 @@ class RaspBerryPI:
         for _ in range(0, cycles):
             for i in range(1, MAX_RANGE + 1):
                 for _ in range(0, 10):
-                    self._blink_led(pin, signal_length, i)
+                    self._fade_led(pin, signal_length, i)
 
             for i in range(MAX_RANGE, 0, -1):
                 for _ in range(0, 10):
-                    self._blink_led(pin, signal_length, i)
+                    self._fade_led(pin, signal_length, i)
 
     def cleanup(self):
         self.gpio.cleanup()

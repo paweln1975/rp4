@@ -3,6 +3,7 @@ import logging
 import sys
 from gpio_interface import GPIOInterface
 
+
 _LOGGING_CONFIGURED = False
 _DEBUG_CLASSES = {"RaspBerryPI"}
 
@@ -52,3 +53,21 @@ def get_logger(cls) -> logging.Logger:
     configure_logging()
     logger = logging.getLogger(cls.__name__)
     return logger
+
+
+try:
+    import msvcrt
+    def key_pressed():
+        return msvcrt.kbhit()
+    def consume_key():
+        msvcrt.getch()
+except ImportError:
+    import select
+    def key_pressed():
+        dr, _, _ = select.select([sys.stdin], [], [], 0)
+        return bool(dr)
+    def consume_key():
+        try:
+            sys.stdin.read(1)
+        except Exception:
+            pass

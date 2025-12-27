@@ -75,5 +75,5 @@ class RealGPIO(GPIOInterface):
         else:
             raise ValueError(f"Unsupported event type: {event_type}")
 
-        gpio.add_event_detect(pin_number, gpio_event, callback=callback)
+        gpio.add_event_detect(pin_number, gpio_event, callback=callback, bouncetime=200)
 
