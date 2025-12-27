@@ -1,5 +1,6 @@
-from gpio_interface import GPIOInterface, GPIOMode, PinMode, PinOutputValue
 import RPi.GPIO as gpio
+from collections.abc import Callable
+from gpio_interface import GPIOInterface, GPIOMode, PinMode, PinOutputValue, GpioEventType, PullUpDownValue
 from importlib.metadata import version
 
 class RealGPIO(GPIOInterface):
@@ -12,7 +13,10 @@ class RealGPIO(GPIOInterface):
         else:
             raise ValueError(f"Unsupported GPIO mode: {mode}")
 
-    def setup(self, pin_number: int, mode: PinMode, initial=PinOutputValue.LOW):
+    def setup(self, pin_number: int, mode: PinMode,
+              initial=PinOutputValue.LOW,
+              pull_up_down=PullUpDownValue.PULL_DOWN):
+
         if mode == PinMode.IN:
             mode = gpio.IN
         elif mode == PinMode.OUT:
@@ -27,10 +31,17 @@ class RealGPIO(GPIOInterface):
         else:
             raise ValueError(f"Unsupported initial value: {initial}")
 
+        if pull_up_down == PullUpDownValue.PULL_UP:
+            pud = gpio.PUD_UP
+        elif pull_up_down == PullUpDownValue.PULL_DOWN:
+            pud = gpio.PUD_DOWN
+        else:
+            raise ValueError(f"Unsupported pull up/down value: {pull_up_down}")
+
         if mode == gpio.OUT:
             gpio.setup(pin_number, mode, initial=initial)
         else:
-            gpio.setup(pin_number, mode)
+            gpio.setup(pin_number, mode, pull_up_down=pud)
 
 
     def set_output(self, pin_number: int, value: PinOutputValue):
@@ -53,3 +64,16 @@ class RealGPIO(GPIOInterface):
                f"\n  PROCESSOR version: {info['PROCESSOR']}" + \
                f"\n  RAM: {info['RAM']}" + \
                f"\n  RPi.GPIO version: {version('RPi.GPIO')}"
+
+    def add_event_handler(self, pin_number: int, event_type: GpioEventType, callback: Callable):
+        if event_type == GpioEventType.RISING:
+            gpio_event = gpio.RISING
+        elif event_type == GpioEventType.FALLING:
+            gpio_event = gpio.FALLING
+        elif event_type == GpioEventType.BOTH:
+            gpio_event = gpio.BOTH
+        else:
+            raise ValueError(f"Unsupported event type: {event_type}")
+
+        gpio.add_event_detect(pin_number, gpio_event, callback=callback)
+

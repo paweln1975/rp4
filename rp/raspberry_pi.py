@@ -1,4 +1,4 @@
-from gpio_interface import GPIOInterface, GPIOMode, PinConfig, PinMode, PinOutputValue
+from gpio_interface import GPIOInterface, GPIOMode, PinConfig, PinMode, PinOutputValue, PullUpDownValue, GpioEventType
 from utils import get_gpio, get_logger
 import time
 
@@ -15,19 +15,40 @@ class RaspBerryPI:
         self.gpio.setmode(mode)
         self.pins_config = dict()
 
-    def configure_pins(self, pins: list[int], mode: PinMode, initial_value: PinOutputValue = PinOutputValue.LOW):
+    def configure_pins(self, pins: list[int], mode: PinMode,
+                       initial_value: PinOutputValue = PinOutputValue.LOW,
+                       pull_up_down: PullUpDownValue = PullUpDownValue.PULL_DOWN,
+                       event_type:GpioEventType = GpioEventType.RISING,
+                       callaback=None):
         self.logger.debug(f"Configuring pins: {pins}")
         for pin in pins:
-            pin_config = PinConfig(pin, mode, initial_value)
+            pin_config = PinConfig(pin_number=pin, mode=mode,
+                                   initial_value=initial_value,
+                                   event_type=event_type,
+                                   pull_up_down=pull_up_down,
+                                   callback=callaback)
 
             if pin in self.pins_config:
                 self.logger.warning(f"Warning: Pin {pin} is already configured. Overwriting the configuration.")
 
             self.pins_config[pin] = pin_config
+
             if mode == PinMode.OUT:
-                self.gpio.setup(pin, mode, initial=initial_value if initial_value else None)
+                self.gpio.setup(pin_number=pin_config.pin_number,
+                                mode=pin_config.mode, initial=pin_config.initial_value)
+            elif mode == PinMode.IN:
+                self.gpio.setup(pin_number=pin_config.pin_number, mode=pin_config.mode,
+                                pull_up_down=pin_config.pull_up_down)
+                if callaback is not None:
+                    self.logger.debug(f"Adding event handler for pin {pin}")
+                    self.gpio.add_event_handler(pin_number=pin_config.pin_number,
+                                                event_type=pin_config.event_type,
+                                                callback=pin_config.callback)
+                else:
+                    self.logger.warning(f"No callback provided for pin {pin}, skipping event handler setup.")
             else:
-                self.gpio.setup(pin, mode)
+                self.logger.error(f"Error: Unsupported Pin mode: {mode}")
+                raise ValueError(f"Unsupported Pin mode: {mode}")
 
     def blink(self, pin: int, blink_count: int = 3, interval: float = 1.0):
         self.logger.debug(f"Blinking pin {pin} for {blink_count} times with interval {interval} seconds.")
