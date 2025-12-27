@@ -23,13 +23,23 @@ gpio.setup(BUTTON_PIN, gpio.IN, pull_up_down=gpio.PUD_UP)
 gpio.add_event_detect(BUTTON_PIN, gpio.FALLING, bouncetime=300,
                       callback=blink_led)
 
+PIR_PIN = 4
+gpio.setup(PIR_PIN, gpio.IN)
+
 print("Press any key to exit...")
 
 while True:
     if key_pressed():
         consume_key()
         break
+
     sleep(0.01)
+
+    if gpio.input(PIR_PIN) == gpio.HIGH:
+        gpio.output(LED_PIN, gpio.HIGH)
+    else:
+        gpio.output(LED_PIN, gpio.LOW)
+
 
 gpio.cleanup()
 

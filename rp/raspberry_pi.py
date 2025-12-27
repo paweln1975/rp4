@@ -19,14 +19,14 @@ class RaspBerryPI:
                        initial_value: PinOutputValue = PinOutputValue.LOW,
                        pull_up_down: PullUpDownValue = PullUpDownValue.PULL_DOWN,
                        event_type:GpioEventType = GpioEventType.RISING,
-                       callaback=None):
+                       callback=None):
         self.logger.debug(f"Configuring pins: {pins}")
         for pin in pins:
             pin_config = PinConfig(pin_number=pin, mode=mode,
                                    initial_value=initial_value,
                                    event_type=event_type,
                                    pull_up_down=pull_up_down,
-                                   callback=callaback)
+                                   callback=callback)
 
             if pin in self.pins_config:
                 self.logger.warning(f"Warning: Pin {pin} is already configured. Overwriting the configuration.")
@@ -39,7 +39,7 @@ class RaspBerryPI:
             elif mode == PinMode.IN:
                 self.gpio.setup(pin_number=pin_config.pin_number, mode=pin_config.mode,
                                 pull_up_down=pin_config.pull_up_down)
-                if callaback is not None:
+                if callback is not None:
                     self.logger.debug(f"Adding event handler for pin {pin}")
                     self.gpio.add_event_handler(pin_number=pin_config.pin_number,
                                                 event_type=pin_config.event_type,

@@ -7,19 +7,19 @@ LED_RED = 17
 LED_GREEN = 22
 LED_BLUE = 27
 
-LEDS = [LED_RED, LED_BLUE, LED_GREEN]
+LEDS = [LED_RED, LED_GREEN, LED_BLUE]
 
 CURRENT_LED = -1
-
 BUTTON_PIN = 26
+PIR_PIN = 4
+
 
 rp4 = RaspBerryPI(mode=GPIOMode.BCM)
 
 def local_blink(channel: int):
     rp4.logger.debug(f"Button pressed on channel {channel}, blinking LED.")
-    rp4.off(LED_RED)
-    rp4.off(LED_GREEN)
-    rp4.off(LED_BLUE)
+    for led in LEDS:
+        rp4.off(led)
     
     global CURRENT_LED
     CURRENT_LED += 1
@@ -28,21 +28,28 @@ def local_blink(channel: int):
 
     rp4.on(LEDS[CURRENT_LED])
 
+def local_fade(channel: int):
+    rp4.logger.debug(f"PIR motion detected on channel {channel}, fading LED.")
+    rp4.fade_in_out(LED_RED)
+
 def run():
     rp4.configure_pins(pins=[LED_RED, LED_BLUE, LED_GREEN], mode=PinMode.OUT, initial_value=PinOutputValue.LOW)
     rp4.configure_pins(pins=[BUTTON_PIN], mode=PinMode.IN,
                        pull_up_down=PullUpDownValue.PULL_UP,
                        event_type=GpioEventType.FALLING,
-                       callaback=local_blink)
+                       callback=local_blink)
+
+    rp4.configure_pins(pins=[PIR_PIN], mode=PinMode.IN,
+                        pull_up_down=PullUpDownValue.PULL_UP,
+                        event_type=GpioEventType.RISING,
+                        callback=local_fade)
 
     print(rp4)
 
     rp4.blink(LED_RED, interval=0.5)
     rp4.blink(LED_GREEN, interval=0.5)
     rp4.blink(LED_BLUE, interval=0.5)
-    # rp4.fade_in_out(LED_PIN)
 
-    local_blink(BUTTON_PIN)
     print("Press any key to exit...")
 
     while True:
