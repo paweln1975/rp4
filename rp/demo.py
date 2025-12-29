@@ -1,4 +1,3 @@
-from utils import key_pressed, consume_key
 from time import sleep
 from raspberry_pi import RaspBerryPI
 from gpio_interface import PinMode, PinOutputValue, GPIOMode, PullUpDownValue, GpioEventType
@@ -13,52 +12,66 @@ CURRENT_LED = -1
 BUTTON_PIN = 26
 PIR_PIN = 4
 
+SYSTEM_ENABLED = True
+MOVEMENT_DETECTED = False
 
-rp4 = RaspBerryPI(mode=GPIOMode.BCM)
+def system_enabled_handler(channel: int):
+    global SYSTEM_ENABLED
+    SYSTEM_ENABLED = not SYSTEM_ENABLED
 
-def local_blink(channel: int):
-    rp4.logger.debug(f"Button pressed on channel {channel}, blinking LED.")
+def movement_detector_handler(channel: int):
+    global MOVEMENT_DETECTED
+    if not SYSTEM_ENABLED:
+        return
+    MOVEMENT_DETECTED = True
+
+
+def enable_led(rp: RaspBerryPI, sleep_time: float = 0.5):
     for led in LEDS:
-        rp4.off(led)
-    
+        rp.off(led)
+
+    sleep(sleep_time)
     global CURRENT_LED
     CURRENT_LED += 1
     if CURRENT_LED >= len(LEDS):
         CURRENT_LED = 0
 
-    rp4.on(LEDS[CURRENT_LED])
+    rp.on(LEDS[CURRENT_LED])
+    sleep(sleep_time)
 
-def local_fade(channel: int):
-    rp4.logger.debug(f"PIR motion detected on channel {channel}, fading LED.")
-    rp4.fade_in_out(LED_RED)
-
-def run():
+def config() -> RaspBerryPI:
+    rp4 = RaspBerryPI(mode=GPIOMode.BCM)
     rp4.configure_pins(pins=[LED_RED, LED_BLUE, LED_GREEN], mode=PinMode.OUT, initial_value=PinOutputValue.LOW)
     rp4.configure_pins(pins=[BUTTON_PIN], mode=PinMode.IN,
                        pull_up_down=PullUpDownValue.PULL_UP,
                        event_type=GpioEventType.FALLING,
-                       callback=local_blink)
+                       callback=system_enabled_handler)
 
     rp4.configure_pins(pins=[PIR_PIN], mode=PinMode.IN,
                         pull_up_down=PullUpDownValue.PULL_UP,
                         event_type=GpioEventType.RISING,
-                        callback=local_fade)
+                        callback=movement_detector_handler)
 
+    rp4.logger.info("Raspberry Pi configured successfully for LED demo.")
     print(rp4)
 
-    rp4.blink(LED_RED, interval=0.5)
-    rp4.blink(LED_GREEN, interval=0.5)
-    rp4.blink(LED_BLUE, interval=0.5)
+    return rp4
 
-    print("Press any key to exit...")
+def run(rp: RaspBerryPI = None):
+    if rp is None:
+        rp = config()
 
-    while True:
-        if key_pressed():
-            consume_key()
-            break
+    while SYSTEM_ENABLED:
+        enable_led(rp)
         sleep(0.01)
+        global MOVEMENT_DETECTED
+        if MOVEMENT_DETECTED:
+            current_led = LEDS[CURRENT_LED]
+            rp.logger.info(f"Movement detected! Fading LED for PIN={current_led}")
+            rp.fade_in_out(current_led)
+            MOVEMENT_DETECTED = False
 
-    rp4.cleanup()
+    rp.cleanup()
 
 if __name__ == "__main__":
     run()

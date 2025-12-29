@@ -5,7 +5,7 @@ from gpio_interface import GPIOInterface
 
 
 _LOGGING_CONFIGURED = False
-_DEBUG_CLASSES = {"RaspBerryPI"}
+_DEBUG_CLASSES = {"GPIOInterface"}
 
 def _check_proc_files_for_rpi() -> bool:
     cpuinfo_path = '/proc/cpuinfo'
