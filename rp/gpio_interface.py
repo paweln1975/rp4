@@ -67,3 +67,6 @@ class GPIOInterface(ABC):
 
     @abstractmethod
     def add_event_handler(self, pin_number: int, event_type: GpioEventType, callback): ...
+
+    @abstractmethod
+    def take_photo(self, file_path: str): ...

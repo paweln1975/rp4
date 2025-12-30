@@ -1,5 +1,6 @@
+from typing import Callable
 from gpio_interface import GPIOInterface, GPIOMode, PinConfig, PinMode, PinOutputValue, PullUpDownValue, GpioEventType
-from utils import get_gpio, get_logger
+from utils import get_gpio, get_logger, get_photo_file_name
 import time
 
 FREQUENCY = 250
@@ -49,6 +50,24 @@ class RaspBerryPI:
             else:
                 self.logger.error(f"Error: Unsupported Pin mode: {mode}")
                 raise ValueError(f"Unsupported Pin mode: {mode}")
+
+    def add_led(self, pin: int) -> 'RaspBerryPI':
+        self.configure_pins(pins=[pin], mode=PinMode.OUT, initial_value=PinOutputValue.LOW)
+        return self
+
+    def add_button(self, pin: int, callback: Callable) -> 'RaspBerryPI':
+        self.configure_pins(pins=[pin], mode=PinMode.IN,
+                            pull_up_down=PullUpDownValue.PULL_UP,
+                            event_type=GpioEventType.FALLING,
+                            callback=callback)
+        return self
+
+    def add_move_detector(self, pin: int, callback: Callable) -> 'RaspBerryPI':
+        self.configure_pins(pins=[pin], mode=PinMode.IN,
+                            pull_up_down=PullUpDownValue.PULL_UP,
+                            event_type=GpioEventType.RISING,
+                            callback=callback)
+        return self
 
     def blink(self, pin: int, blink_count: int = 1, interval: float = 1.0):
         self.logger.debug(f"Blinking pin {pin} for {blink_count} times with interval {interval} seconds.")
@@ -103,6 +122,16 @@ class RaspBerryPI:
             for i in range(MAX_RANGE, 0, -1):
                 for _ in range(0, 10):
                     self._fade_led(pin, signal_length, i)
+
+    def take_photo(self):
+        try:
+            file_name = get_photo_file_name()
+            self.logger.info(f"Taking photo and saving to {file_name}.")
+            self.gpio.take_photo(file_name)
+            self.logger.info(f"Photo saved to {file_name}.")
+        except Exception as e:
+            self.logger.error(f"Error taking photo: {e}")
+
 
     def cleanup(self):
         self.gpio.cleanup()

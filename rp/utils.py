@@ -2,7 +2,7 @@ import os
 import logging
 import sys
 from gpio_interface import GPIOInterface
-
+from datetime import datetime
 
 _LOGGING_CONFIGURED = False
 _DEBUG_CLASSES = {"GPIOInterface"}
@@ -71,3 +71,26 @@ except ImportError:
             sys.stdin.read(1)
         except Exception:
             pass
+
+def get_photo_file_name() -> str:
+
+    def __add_led_zero(s) -> str:
+        return '0' + s if len(s) == 1 else s
+
+    now = datetime.now()
+    sep = "_"
+
+    user_pwd_folder = os.path.expanduser("~") + os.sep + "Pictures" + os.sep
+    if not os.path.isdir(user_pwd_folder):
+        os.mkdir(user_pwd_folder)
+
+    current_date_folder = user_pwd_folder + sep.join([__add_led_zero(s) for s in
+                     [str(now.year), str(now.month), str(now.day)]]) + os.sep
+
+    if not os.path.isdir(current_date_folder):
+        os.mkdir(current_date_folder)
+
+    filename = 'image' + sep + sep.join([__add_led_zero(s) for s in
+                     [str(now.hour), str(now.minute), str(now.second)]])
+
+    return current_date_folder + filename + ".jpg"

@@ -48,3 +48,6 @@ class FakeGPIO(GPIOInterface):
         if pin_number not in self._handlers:
             self._handlers[pin_number] = []
         self._handlers[pin_number].append((event_type, callback))
+
+    def take_photo(self, file_path: str):
+        self.logger.info(f"Taking photo and saving to {file_path} (fake operation)")

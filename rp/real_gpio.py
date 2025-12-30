@@ -1,4 +1,6 @@
 import RPi.GPIO as gpio
+from picamera import PiCamera
+from time import sleep
 from collections.abc import Callable
 from gpio_interface import GPIOInterface, GPIOMode, PinMode, PinOutputValue, GpioEventType, PullUpDownValue
 from importlib.metadata import version
@@ -76,4 +78,15 @@ class RealGPIO(GPIOInterface):
             raise ValueError(f"Unsupported event type: {event_type}")
 
         gpio.add_event_detect(pin_number, gpio_event, callback=callback, bouncetime=200)
+
+    def take_photo(self, file_path: str):
+        camera = PiCamera()
+        camera.rotation = 180
+        camera.resolution = (1280, 720)
+        sleep(2)
+
+        camera.capture(file_path)
+        camera.close()
+
+
 

@@ -41,20 +41,25 @@ def enable_led(rp: RaspBerryPI, sleep_time: float = 0.5):
 
 def config() -> RaspBerryPI:
     rp4 = RaspBerryPI(mode=GPIOMode.BCM)
-    rp4.configure_pins(pins=[LED_RED, LED_BLUE, LED_GREEN], mode=PinMode.OUT, initial_value=PinOutputValue.LOW)
-    rp4.configure_pins(pins=[BUTTON_PIN], mode=PinMode.IN,
-                       pull_up_down=PullUpDownValue.PULL_UP,
-                       event_type=GpioEventType.FALLING,
-                       callback=system_enabled_handler)
+    # rp4.configure_pins(pins=[LED_RED, LED_BLUE, LED_GREEN], mode=PinMode.OUT, initial_value=PinOutputValue.LOW)
+    # rp4.configure_pins(pins=[BUTTON_PIN], mode=PinMode.IN,
+    #                    pull_up_down=PullUpDownValue.PULL_UP,
+    #                    event_type=GpioEventType.FALLING,
+    #                    callback=system_enabled_handler)
+    #
+    # rp4.configure_pins(pins=[PIR_PIN], mode=PinMode.IN,
+    #                     pull_up_down=PullUpDownValue.PULL_UP,
+    #                     event_type=GpioEventType.RISING,
+    #                     callback=movement_detector_handler)
 
-    rp4.configure_pins(pins=[PIR_PIN], mode=PinMode.IN,
-                        pull_up_down=PullUpDownValue.PULL_UP,
-                        event_type=GpioEventType.RISING,
-                        callback=movement_detector_handler)
+    rp4.add_led(LED_RED) \
+        .add_led(LED_GREEN) \
+        .add_led(LED_BLUE) \
+        .add_button(BUTTON_PIN, system_enabled_handler) \
+        .add_move_detector(PIR_PIN, movement_detector_handler)
 
     rp4.logger.info("Raspberry Pi configured successfully for LED demo.")
     print(rp4)
-
     return rp4
 
 def run(rp: RaspBerryPI = None):
@@ -69,6 +74,7 @@ def run(rp: RaspBerryPI = None):
             current_led = LEDS[CURRENT_LED]
             rp.logger.info(f"Movement detected! Fading LED for PIN={current_led}")
             rp.fade_in_out(current_led)
+            rp.take_photo()
             MOVEMENT_DETECTED = False
 
     rp.cleanup()
