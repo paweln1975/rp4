@@ -1,11 +1,17 @@
 import RPi.GPIO as gpio
-from picamera import PiCamera
-from time import sleep
+from picamera2 import Picamera2, Preview
 from collections.abc import Callable
 from gpio_interface import GPIOInterface, GPIOMode, PinMode, PinOutputValue, GpioEventType, PullUpDownValue
 from importlib.metadata import version
 
 class RealGPIO(GPIOInterface):
+
+    def __init__(self):
+        # Initialize the camera ONCE here
+        self._picam2 = Picamera2()
+        self._camera_config = self._picam2.create_still_configuration()
+        self._picam2.configure(self._camera_config)
+        self._picam2.start()
 
     def setmode(self, mode: GPIOMode):
         if mode == GPIOMode.BCM:
@@ -55,17 +61,26 @@ class RealGPIO(GPIOInterface):
             raise ValueError(f"Unsupported output value: {value}")
 
     def cleanup(self):
+        self._picam2.stop()
         gpio.cleanup()
 
     def info(self):
         info = gpio.RPI_INFO
+
+        # We update the version lookup to check for 'rpi-lgpio'
+        try:
+            lib_version = version('rpi-lgpio')
+        except:
+            # Fallback in case it's installed via apt or under a different name
+            lib_version = "Unknown (rpi-lgpio)"
+
         return "[REAL GPIO] RPi Info:" + \
-               f"\n  REVISION: {info['REVISION']}" + \
-               f"\n  TYPE: {info['TYPE']}" + \
-               f"\n  MANUFACTURER: {info['MANUFACTURER']}" + \
-               f"\n  PROCESSOR version: {info['PROCESSOR']}" + \
-               f"\n  RAM: {info['RAM']}" + \
-               f"\n  RPi.GPIO version: {version('RPi.GPIO')}"
+            f"\n  REVISION: {info['REVISION']}" + \
+            f"\n  TYPE: {info['TYPE']}" + \
+            f"\n  MANUFACTURER: {info['MANUFACTURER']}" + \
+            f"\n  PROCESSOR version: {info['PROCESSOR']}" + \
+            f"\n  RAM: {info['RAM']}" + \
+            f"\n  Library version: {lib_version}"
 
     def add_event_handler(self, pin_number: int, event_type: GpioEventType, callback: Callable):
         if event_type == GpioEventType.RISING:
@@ -80,13 +95,9 @@ class RealGPIO(GPIOInterface):
         gpio.add_event_detect(pin_number, gpio_event, callback=callback, bouncetime=200)
 
     def take_photo(self, file_path: str):
-        camera = PiCamera()
-        camera.rotation = 180
-        camera.resolution = (1280, 720)
-        sleep(2)
-
-        camera.capture(file_path)
-        camera.close()
-
-
-
+        try:
+            # Reuse the existing instance
+            self._picam2.capture_file(file_path)
+            print(f"Photo saved to {file_path}")
+        except Exception as e:
+            print(f"Error during capture: {e}")
