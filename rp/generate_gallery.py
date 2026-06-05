@@ -120,6 +120,13 @@ def build_gallery_for_day(root_path: str, day: str = None, output_dir: str = Non
     if day is None:
         day = datetime.date.today().strftime('%Y_%m_%d')
 
+    # Convert day format to date object for display
+    try:
+        day_obj = datetime.datetime.strptime(day, '%Y_%m_%d').date()
+        day_display = day_obj.strftime('%d.%m.%Y')  # np. "05.06.2026"
+    except ValueError:
+        day_display = day
+
     day_folder = os.path.join(root_path, day)
     if not os.path.isdir(day_folder):
         print(f"Błąd: folder dla dnia {day} nie istnieje: {day_folder}")
@@ -138,9 +145,8 @@ def build_gallery_for_day(root_path: str, day: str = None, output_dir: str = Non
     for f in files:
         rel = os.path.join(day, f).replace('\\', '/')
         time_label = extract_time_from_filename(f)
-        imgs_html.append(f'<div class="photo-item"><a href="{escape(rel)}" target="_blank">'
-                         f'<img src="{escape(rel)}" alt="{escape(f)}"></a>'
-                         f'<div class="photo-time">{escape(time_label)}</div></div>')
+        imgs_html.append(f'<div class="photo-item"><div class="photo-time">{escape(time_label)}</div><a href="{escape(rel)}" target="_blank">'
+                         f'<img src="{escape(rel)}" alt="{escape(f)}"></a></div>')
 
     grid_html = '\n'.join(imgs_html)
 
@@ -149,7 +155,7 @@ def build_gallery_for_day(root_path: str, day: str = None, output_dir: str = Non
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Galeria - {escape(day)}</title>
+  <title>Galeria - {escape(day_display)}</title>
   <style>
     * {{
       margin: 0;
@@ -195,27 +201,28 @@ def build_gallery_for_day(root_path: str, day: str = None, output_dir: str = Non
       box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6);
       transition: transform 0.25s ease, box-shadow 0.25s ease;
     }}
-    .photo-item:hover {{
-      transform: translateY(-6px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
-    }}
-    .photo-item a {{
-      display: block;
-    }}
-    .photo-item img {{
-      width: 100%;
-      height: auto; /* zachowaj proporcje, większe zdjęcia */
-      display: block;
-      background: #000;
-    }}
-    .photo-time {{
-      padding: 14px;
-      text-align: center;
-      font-weight: 700;
-      color: #ffffff;
-      font-size: 1.05rem;
-      background: rgba(255,255,255,0.03);
-    }}
+     .photo-item:hover {{
+       transform: translateY(-6px);
+       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+     }}
+     .photo-item a {{
+       display: block;
+     }}
+     .photo-item img {{
+       width: 100%;
+       height: auto; /* zachowaj proporcje, większe zdjęcia */
+       display: block;
+       background: #000;
+     }}
+     .photo-time {{
+       padding: 10px 14px;
+       text-align: center;
+       font-weight: 700;
+       color: #ffffff;
+       font-size: 1.05rem;
+       background: rgba(0, 0, 0, 0.5);
+       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+     }}
     .back-link {{
       display: inline-block;
       margin-bottom: 18px;
@@ -238,7 +245,7 @@ def build_gallery_for_day(root_path: str, day: str = None, output_dir: str = Non
   <div class="container">
     <a href="index.html" class="back-link">← Powrót do listy galerii</a>
     <div class="header">
-      <h1><img src="fish.png" alt="fish" style="height:28px;vertical-align:middle;margin-right:8px"> Galeria: {escape(day)}</h1>
+      <h1><img src="fish.png" alt="fish" style="height:28px;vertical-align:middle;margin-right:8px"> Galeria: {escape(day_display)}</h1>
       <div class="info">{len(files)} zdjęć</div>
     </div>
     <div class="gallery-grid">
