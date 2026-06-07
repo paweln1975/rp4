@@ -2,7 +2,6 @@ from datetime import datetime
 from time import sleep
 from raspberry_pi import RaspBerryPI
 from gpio_interface import PinMode, PinOutputValue, GPIOMode, PullUpDownValue, GpioEventType
-from generate_gallery import build_gallery_for_day
 
 LED_RED = 17
 LED_GREEN = 22
@@ -17,7 +16,7 @@ PIR_PIN = 4
 SYSTEM_ENABLED = True
 MOVEMENT_DETECTED = False
 
-PHOTO_TIME_DELTA_IN_SEC = 60.0 * 5
+PHOTO_TIME_DELTA_IN_SEC = 60.0 * 60 # every one hour
 
 HOUR_START = 6
 HOUR_END = 20
@@ -86,7 +85,6 @@ def take_photo(rp: RaspBerryPI, last_photo_time: datetime) -> datetime:
             # Red led fade out to starting the photo
             rp.fade_in_out(LED_RED)
             rp.take_photo()
-            build_gallery_for_day(root_path="/home/pi/Pictures", output_dir="/home/pi/Pictures")
     return last_photo_time
 
 def run(rp: RaspBerryPI = None):
